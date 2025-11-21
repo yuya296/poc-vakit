@@ -28,36 +28,54 @@
 
 ### 技術スタック
 
-- **音声処理**: OpenAI Realtime API
-- **AI推論**: OpenAI Responses API (GPT-4.1-mini)
-- **バックエンド**: AWS Lambda + API Gateway
-- **外部連携**: Google Calendar API, Slack API
-- **クライアント**: Raspberry Pi / PC（Python/Node.js）
+- **音声処理**: OpenAI Realtime API（予定）
+- **AI推論**: OpenRouter（OpenAI互換API）
+- **バックエンド**: AWS Lambda (TypeScript) + API Gateway
+- **外部連携**: Google Calendar API, Slack API（実装予定）
+- **クライアント**: Raspberry Pi / PC（予定）
 
 ## ドキュメント
 
 - [設計書 v0](./docs/DESIGN_v0.md) - 詳細な設計仕様
+- [Lambda README](./lambda/README.md) - Lambda実装の詳細
 
 ## プロジェクト構成
 
 ```
 poc-vakit/
-├── docs/               # ドキュメント
-│   └── DESIGN_v0.md   # v0設計書
-├── lambda/            # Lambda関数（予定）
-├── client/            # クライアント実装（予定）
-├── cdk/               # AWS CDK定義（予定）
-└── README.md          # このファイル
+├── docs/                    # ドキュメント
+│   └── DESIGN_v0.md        # v0設計書
+├── lambda/                  # Lambda関数 ✅ 実装完了
+│   ├── src/
+│   │   ├── index.ts        # Lambda handler
+│   │   ├── types.ts        # Intent型定義
+│   │   ├── classifier.ts   # Intent判定（OpenRouter）
+│   │   └── handlers/       # Intent別ハンドラー
+│   ├── package.json
+│   └── README.md
+├── client/                  # クライアント実装（予定）
+├── cdk/                     # AWS CDK定義（予定）
+└── README.md
 ```
 
 ## 開発状況
 
-現在のフェーズ: **設計完了**
+現在のフェーズ: **コアロジック実装完了**
 
-次のステップ:
-1. Intent判定用プロンプトの実テキスト作成
-2. Google Calendar / Slack APIインターフェース定義
-3. Lambda + API GatewayのCDK定義
+### ✅ 完了
+- 設計書作成
+- Lambda コアロジック実装
+  - 10種類のIntent判定（OpenRouter統合）
+  - TypeScript型安全実装
+  - ログ機能
+
+### 🚧 次のステップ
+1. 外部サービス統合
+   - Google Calendar API 実装
+   - Slack API 実装
+2. AWS CDK でのインフラ定義
+3. クライアント実装（音声 I/O）
+4. E2Eテスト
 
 ## ライセンス
 
