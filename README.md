@@ -38,6 +38,7 @@
 
 - [設計書 v0](./docs/DESIGN_v0.md) - 詳細な設計仕様
 - [Lambda README](./lambda/README.md) - Lambda実装の詳細
+- [CDK README](./cdk/README.md) - デプロイ手順
 
 ## プロジェクト構成
 
@@ -53,14 +54,18 @@ poc-vakit/
 │   │   └── handlers/       # Intent別ハンドラー
 │   ├── package.json
 │   └── README.md
+├── cdk/                     # AWS CDK ✅ 実装完了
+│   ├── bin/app.ts          # CDK app
+│   ├── lib/vakit-stack.ts  # スタック定義
+│   ├── package.json
+│   └── README.md
 ├── client/                  # クライアント実装（予定）
-├── cdk/                     # AWS CDK定義（予定）
 └── README.md
 ```
 
 ## 開発状況
 
-現在のフェーズ: **コアロジック実装完了**
+現在のフェーズ: **デプロイ可能**
 
 ### ✅ 完了
 - 設計書作成
@@ -68,14 +73,43 @@ poc-vakit/
   - 10種類のIntent判定（OpenRouter統合）
   - TypeScript型安全実装
   - ログ機能
+- **AWS CDK インフラ定義**
+  - Lambda + API Gateway
+  - CloudWatch Logs
+  - 1コマンドでデプロイ可能
 
 ### 🚧 次のステップ
 1. 外部サービス統合
    - Google Calendar API 実装
    - Slack API 実装
-2. AWS CDK でのインフラ定義
-3. クライアント実装（音声 I/O）
+2. クライアント実装（音声 I/O）
+3. 認証・認可（API Key / Cognito）
 4. E2Eテスト
+
+## クイックスタート
+
+### デプロイ
+
+```bash
+# 1. Lambda のビルド
+cd lambda
+npm install && npm run build
+
+# 2. CDK のセットアップ
+cd ../cdk
+npm install
+
+# 3. デプロイ
+export OPENROUTER_API_KEY="your-api-key"
+npm run deploy
+
+# 4. テスト
+curl -X POST "https://xxxxx.execute-api.ap-northeast-1.amazonaws.com/v1/agent" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "今日の予定教えて", "user_id": "yuya"}'
+```
+
+詳細は [CDK README](./cdk/README.md) を参照。
 
 ## ライセンス
 
