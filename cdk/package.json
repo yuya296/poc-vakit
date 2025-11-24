@@ -6,7 +6,8 @@
     "build": "tsc",
     "watch": "tsc -w",
     "cdk": "cdk",
-    "deploy": "cdk deploy",
+    "deploy": "./deploy.sh",
+    "deploy:direct": "cdk deploy",
     "diff": "cdk diff",
     "synth": "cdk synth",
     "destroy": "cdk destroy"

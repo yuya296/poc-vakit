@@ -18,26 +18,12 @@ export class VakitStack extends cdk.Stack {
     super(scope, id, props);
 
     // Lambda function
+    // NOTE: Lambda code must be pre-built in lambda/dist/ directory
+    // Run `cd lambda && npm run build` before deployment
     const agentFunction = new lambda.Function(this, "AgentBrainFunction", {
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: "index.handler",
-      code: lambda.Code.fromAsset(path.join(__dirname, "../../lambda"), {
-        bundling: {
-          image: lambda.Runtime.NODEJS_20_X.bundlingImage,
-          command: [
-            "bash",
-            "-c",
-            [
-              "npm install",
-              "npm run build",
-              "cp -r dist/* /asset-output/",
-              "cp package.json /asset-output/",
-              "cd /asset-output",
-              "npm install --production",
-            ].join(" && "),
-          ],
-        },
-      }),
+      code: lambda.Code.fromAsset(path.join(__dirname, "../../lambda/dist")),
       environment: {
         OPENROUTER_API_KEY: props.openRouterApiKey,
         OPENROUTER_BASE_URL: "https://openrouter.ai/api/v1",
@@ -73,7 +59,32 @@ export class VakitStack extends cdk.Stack {
       },
     });
 
-    // /agent endpoint
+    // API Key for authentication
+    const apiKey = api.addApiKey("VakitApiKey", {
+      apiKeyName: "vakit-agent-key",
+      description: "API Key for VAKIT Agent access",
+    });
+
+    // Usage Plan with rate limiting
+    const usagePlan = api.addUsagePlan("VakitUsagePlan", {
+      name: "VAKIT Agent Usage Plan",
+      description: "Usage plan with rate limiting for VAKIT Agent API",
+      throttle: {
+        rateLimit: 10, // requests per second
+        burstLimit: 20, // max concurrent requests
+      },
+      quota: {
+        limit: 10000, // max requests per month
+        period: apigateway.Period.MONTH,
+      },
+    });
+
+    usagePlan.addApiKey(apiKey);
+    usagePlan.addApiStage({
+      stage: api.deploymentStage,
+    });
+
+    // /agent endpoint with API Key required
     const agentResource = api.root.addResource("agent");
     const integration = new apigateway.LambdaIntegration(agentFunction, {
       proxy: true,
@@ -81,7 +92,7 @@ export class VakitStack extends cdk.Stack {
     });
 
     agentResource.addMethod("POST", integration, {
-      apiKeyRequired: false, // v0: No API key required
+      apiKeyRequired: true, // API Key required for security
     });
 
     // Outputs
@@ -99,6 +110,11 @@ export class VakitStack extends cdk.Stack {
     new cdk.CfnOutput(this, "FunctionName", {
       value: agentFunction.functionName,
       description: "Lambda function name",
+    });
+
+    new cdk.CfnOutput(this, "ApiKeyId", {
+      value: apiKey.keyId,
+      description: "API Key ID (use AWS Console or CLI to get the actual key value)",
     });
   }
 }

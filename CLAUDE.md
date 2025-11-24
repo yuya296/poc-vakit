@@ -3,7 +3,7 @@
 ## プロジェクト概要
 音声対応パーソナルAIエージェント（VAKIT: Voice-Activated Knowledge & Integration Tool）のプロトタイプ開発
 
-## 開発フェーズ: v0 (コアロジック実装完了)
+## 開発フェーズ: v0.1 (Commandパターン + AWS デプロイ完了)
 
 ### 完了した実装
 
@@ -71,9 +71,82 @@ npm run chat        # 対話モード
 - `.env` ファイルで管理
 - `OPENROUTER_API_KEY`, `MODEL`, `DEFAULT_USER_ID`
 
+### アーキテクチャ改善 ✅
+
+#### Commandパターンへのリファクタリング
+各Intentを独立したCommandクラスとして実装し、設定ファイルで有効/無効を切り替え可能に:
+
+**新しい構成**:
+```
+lambda/src/
+├── commands/
+│   ├── base.ts              # IntentCommand interface
+│   ├── smallTalk.ts
+│   ├── askKnowledge.ts
+│   ├── timer.ts
+│   ├── alarm.ts
+│   ├── querySchedule.ts
+│   ├── addEvent.ts
+│   ├── cancelEvent.ts
+│   ├── slackPost.ts
+│   ├── slackDm.ts
+│   └── slackSummarize.ts
+├── config/
+│   └── intents.ts           # Intent有効/無効設定
+├── registry.ts              # CommandRegistry
+├── classifier.ts            # 有効なIntentのみを分類
+└── index.ts                 # Registry使用
+```
+
+**利点**:
+- Intentの追加・削除が容易
+- `config/intents.ts`で簡単にon/off切り替え
+- テストしやすい独立したクラス
+- 分類時に有効なIntentのみをLLMに伝達
+
+### AWS デプロイ ✅
+
+**デプロイ情報**:
+- **API エンドポイント**: `https://ti261jguu2.execute-api.ap-northeast-1.amazonaws.com/v1/agent`
+- **Lambda関数**: `VakitStack-AgentBrainFunction0609ACCE-ryNEfMYQFYOv`
+- **リージョン**: `ap-northeast-1`
+- **プロファイル**: `cdk-348103270100`
+
+**セキュリティ設定**:
+- ✅ API Key認証（必須）
+- ✅ レート制限: 10 req/sec、バースト 20
+- ✅ 月間クォータ: 10,000リクエスト
+- **API Key**: `AV2AvH3bdb5kZTIIL6y1g1HOMAQDIr4u5fMplb6k`
+- **API Key ID**: `gtae50dw89`
+
+**動作確認**:
+```bash
+# API Keyありでリクエスト（成功）
+curl -X POST "https://ti261jguu2.execute-api.ap-northeast-1.amazonaws.com/v1/agent" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: AV2AvH3bdb5kZTIIL6y1g1HOMAQDIr4u5fMplb6k" \
+  -d '{"text": "こんにちは", "user_id": "yuya"}'
+
+# API Keyなしでリクエスト（403 Forbidden）
+curl -X POST "https://ti261jguu2.execute-api.ap-northeast-1.amazonaws.com/v1/agent" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "こんにちは", "user_id": "yuya"}'
+```
+
+レスポンス例:
+```json
+{
+  "ok": true,
+  "intent": "SMALL_TALK",
+  "slots": {"free_text": "こんにちは"},
+  "reply": "こんにちは。ご用件をどうぞ。",
+  "meta": {"model": "openai/gpt-oss-120b", "tool_calls": []}
+}
+```
+
 ### 現在のステータス
 
-**デプロイ可能**: Lambda + CDK実装完了、ローカルテストで動作確認済み
+**本番稼働中**: AWS Lambda + API Gateway でデプロイ済み、動作確認完了
 
 **未実装**:
 - 外部サービス統合（Google Calendar API, Slack API）
@@ -82,7 +155,7 @@ npm run chat        # 対話モード
 
 ### Git情報
 - **ブランチ**: `claude/design-ai-agent-015vQxgpMh8gDf9AoE9g2Xd1`
-- **最終コミット**: ローカルテストスクリプト追加、TypeScriptエラー修正
+- **最終更新**: Commandパターンリファクタリング + AWS デプロイ
 
 ---
 
