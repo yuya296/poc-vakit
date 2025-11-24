@@ -9,6 +9,7 @@
     "clean": "rm -rf dist",
     "test": "jest",
     "test:local": "ts-node test.ts",
+    "chat": "ts-node chat.ts",
     "lint": "eslint src --ext .ts"
   },
   "dependencies": {
