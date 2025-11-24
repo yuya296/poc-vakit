@@ -52,7 +52,7 @@ export const handler = async (
   try {
     // Parse request body
     const body: AgentRequest = JSON.parse(event.body || "{}");
-    const { text, user_id, session_id } = body;
+    const { text, user_id } = body;
 
     if (!text) {
       return {

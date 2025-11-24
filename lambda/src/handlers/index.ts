@@ -160,13 +160,12 @@ export class IntentHandlers {
   }
 
   private async handleQuerySchedule(
-    userId: string,
+    _userId: string,
     slots: QueryScheduleSlots
   ): Promise<HandlerResult> {
     // TODO: Implement Google Calendar integration
     // For now, return a placeholder
 
-    const startDate = new Date(slots.range_start);
     const focusStr = slots.focus === "today" ? "今日" : "その期間";
 
     return {
@@ -176,7 +175,7 @@ export class IntentHandlers {
   }
 
   private async handleAddEvent(
-    userId: string,
+    _userId: string,
     slots: AddEventSlots
   ): Promise<HandlerResult> {
     // TODO: Implement Google Calendar integration
@@ -197,8 +196,8 @@ export class IntentHandlers {
   }
 
   private async handleCancelEvent(
-    userId: string,
-    slots: CancelEventSlots
+    _userId: string,
+    _slots: CancelEventSlots
   ): Promise<HandlerResult> {
     // TODO: Implement Google Calendar integration
 
@@ -209,7 +208,7 @@ export class IntentHandlers {
   }
 
   private async handleSlackPostMessage(
-    userId: string,
+    _userId: string,
     slots: SlackPostMessageSlots
   ): Promise<HandlerResult> {
     // TODO: Implement Slack integration
@@ -221,7 +220,7 @@ export class IntentHandlers {
   }
 
   private async handleSlackSendDM(
-    userId: string,
+    _userId: string,
     slots: SlackSendDMSlots
   ): Promise<HandlerResult> {
     // TODO: Implement Slack integration
@@ -233,7 +232,7 @@ export class IntentHandlers {
   }
 
   private async handleSlackSummarizeChannel(
-    userId: string,
+    _userId: string,
     slots: SlackSummarizeChannelSlots
   ): Promise<HandlerResult> {
     // TODO: Implement Slack integration + summarization

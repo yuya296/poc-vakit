@@ -152,7 +152,7 @@ export class IntentClassifier {
     this.model = config.model;
   }
 
-  async classify(text: string, userId: string): Promise<IntentPayload> {
+  async classify(text: string, _userId: string): Promise<IntentPayload> {
     try {
       const response = await this.client.chat.completions.create({
         model: this.model,
