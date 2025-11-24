@@ -5,54 +5,52 @@ import {
   AgentConfig,
 } from "./types";
 
-// ==================== System Prompt ====================
+// ==================== Intent Definitions ====================
 
-const SYSTEM_PROMPT = `あなたはパーソナル秘書エージェントのIntent分類器です。
-
-ユーザーの発話から、以下のIntentのいずれかに分類し、必要なslots（パラメータ）を抽出してください。
-
-## Intent一覧
-
-### 1. SMALL_TALK
+/**
+ * 各Intentの詳細定義（システムプロンプト生成用）
+ */
+const INTENT_DEFINITIONS: Record<string, string> = {
+  SMALL_TALK: `### SMALL_TALK
 雑談・日常会話
 例: 「今日は眠い」「元気？」
 
 slots:
-- free_text: string (ユーザーの発話そのまま)
+- free_text: string (ユーザーの発話そのまま)`,
 
-### 2. ASK_KNOWLEDGE
+  ASK_KNOWLEDGE: `### ASK_KNOWLEDGE
 一般的な知識・質問への回答
 例: 「型理論って何？」「イタリアの首都は？」
 
 slots:
-- question: string (質問内容)
+- question: string (質問内容)`,
 
-### 3. SET_TIMER
+  SET_TIMER: `### SET_TIMER
 タイマーのセット
 例: 「3分タイマーセットして」「5分後に教えて」
 
 slots:
 - duration_seconds: number (秒数)
-- label?: string (タイマーのラベル)
+- label?: string (タイマーのラベル)`,
 
-### 4. SET_ALARM
+  SET_ALARM: `### SET_ALARM
 アラームのセット
 例: 「明日の7時にアラームセットして」
 
 slots:
 - datetime: string (ISO 8601形式、例: "2025-11-22T07:00:00+09:00")
-- label?: string (アラームのラベル)
+- label?: string (アラームのラベル)`,
 
-### 5. QUERY_SCHEDULE
+  QUERY_SCHEDULE: `### QUERY_SCHEDULE
 予定の確認
 例: 「今日の予定教えて」「明日の午前って空いてる？」
 
 slots:
 - range_start: string (ISO 8601形式)
 - range_end: string (ISO 8601形式)
-- focus?: string ("today", "tomorrow", "next_week" など)
+- focus?: string ("today", "tomorrow", "next_week" など)`,
 
-### 6. ADD_EVENT
+  ADD_EVENT: `### ADD_EVENT
 予定の追加
 例: 「明日の10時から30分、ミーティング入れて」
 
@@ -60,39 +58,59 @@ slots:
 - title: string (予定のタイトル)
 - start: string (ISO 8601形式)
 - end: string (ISO 8601形式)
-- location?: string | null (場所)
+- location?: string | null (場所)`,
 
-### 7. CANCEL_EVENT
+  CANCEL_EVENT: `### CANCEL_EVENT
 予定のキャンセル
 例: 「明日の10時のミーティングキャンセルして」
 
 slots:
 - target_time: string (ISO 8601形式)
-- title_keyword?: string (予定のキーワード)
+- title_keyword?: string (予定のキーワード)`,
 
-### 8. SLACK_POST_MESSAGE
+  SLACK_POST_MESSAGE: `### SLACK_POST_MESSAGE
 Slackチャンネルへの投稿
 例: 「#random に『今日は在宅勤務します』って送って」
 
 slots:
 - channel: string (例: "#random")
-- message: string (送信するメッセージ)
+- message: string (送信するメッセージ)`,
 
-### 9. SLACK_SEND_DM
+  SLACK_SEND_DM: `### SLACK_SEND_DM
 SlackでDM送信
 例: 「田中さんに『あとで10分話せますか？』って送って」
 
 slots:
 - user_display_name: string (表示名)
-- message: string (送信するメッセージ)
+- message: string (送信するメッセージ)`,
 
-### 10. SLACK_SUMMARIZE_CHANNEL
+  SLACK_SUMMARIZE_CHANNEL: `### SLACK_SUMMARIZE_CHANNEL
 Slackチャンネルの要約
 例: 「#backend の今日の流れざっくり教えて」
 
 slots:
 - channel: string (例: "#backend")
-- range_hours: number (デフォルト: 12)
+- range_hours: number (デフォルト: 12)`,
+};
+
+// ==================== System Prompt Generator ====================
+
+/**
+ * 有効なIntentのみを含むシステムプロンプトを動的生成
+ */
+function generateSystemPrompt(enabledIntents: string[]): string {
+  const intentSections = enabledIntents
+    .map((name) => INTENT_DEFINITIONS[name])
+    .filter(Boolean)
+    .join("\n\n");
+
+  return `あなたはパーソナル秘書エージェントのIntent分類器です。
+
+ユーザーの発話から、以下のIntentのいずれかに分類し、必要なslots（パラメータ）を抽出してください。
+
+## Intent一覧
+
+${intentSections}
 
 ## 重要な指示
 
@@ -137,19 +155,24 @@ ${new Date().toISOString()}
   }
 }
 `;
+}
 
 // ==================== Classifier ====================
 
 export class IntentClassifier {
   private client: OpenAI;
   private model: string;
+  private systemPrompt: string;
 
-  constructor(config: AgentConfig) {
+  constructor(config: AgentConfig, enabledIntents: string[]) {
     this.client = new OpenAI({
       apiKey: config.openRouterApiKey,
       baseURL: config.openRouterBaseUrl,
     });
     this.model = config.model;
+    this.systemPrompt = generateSystemPrompt(enabledIntents);
+
+    console.log(`[IntentClassifier] Initialized with ${enabledIntents.length} enabled intents:`, enabledIntents);
   }
 
   async classify(text: string, _userId: string): Promise<IntentPayload> {
@@ -159,7 +182,7 @@ export class IntentClassifier {
         messages: [
           {
             role: "system",
-            content: SYSTEM_PROMPT,
+            content: this.systemPrompt,
           },
           {
             role: "user",

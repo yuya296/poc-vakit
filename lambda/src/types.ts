@@ -115,8 +115,9 @@ export interface AgentRequest {
 }
 
 export interface ToolCall {
-  service: string;
-  action: string;
+  tool: string;
+  args: Record<string, unknown>;
+  result: unknown;
 }
 
 export interface AgentResponse {

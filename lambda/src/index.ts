@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { IntentClassifier } from "./classifier";
-import { IntentHandlers } from "./handlers";
+import { CommandRegistry } from "./registry";
 import { AgentRequest, AgentResponse, AgentConfig } from "./types";
 
 // ==================== Configuration ====================
@@ -71,15 +71,20 @@ export const handler = async (
     const config = getConfig();
     const userId = user_id || config.userId;
 
-    // Initialize classifier and handlers
-    const classifier = new IntentClassifier(config);
-    const handlers = new IntentHandlers(config);
+    // Initialize registry (manages enabled commands)
+    const registry = new CommandRegistry(config.openRouterApiKey, config.model);
+
+    // Get enabled intents for classifier
+    const enabledIntents = registry.getEnabledIntents().map(i => i.name);
+
+    // Initialize classifier with enabled intents
+    const classifier = new IntentClassifier(config, enabledIntents);
 
     // Step 1: Classify intent
     const intentPayload = await classifier.classify(text, userId);
 
-    // Step 2: Handle intent
-    const result = await handlers.handle(intentPayload, userId);
+    // Step 2: Execute intent command
+    const result = await registry.execute(intentPayload, userId);
 
     // Step 3: Build response
     const response: AgentResponse = {
@@ -100,8 +105,8 @@ export const handler = async (
       text,
       intent: intentPayload.intent,
       slots: intentPayload.slots,
-      service: result.toolCalls[0]?.service,
-      action: result.toolCalls[0]?.action,
+      service: result.toolCalls[0]?.tool || "",
+      action: result.toolCalls[0]?.tool || "",
       status: "success",
     });
 
