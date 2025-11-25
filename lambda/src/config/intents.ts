@@ -11,6 +11,7 @@ export const intentConfig = {
   SET_ALARM: true,
   QUERY_SCHEDULE: true,
   ADD_EVENT: true,
+  UPDATE_EVENT: true, // 予定編集機能
   CANCEL_EVENT: true,
   SLACK_POST_MESSAGE: true,
   SLACK_SEND_DM: true,

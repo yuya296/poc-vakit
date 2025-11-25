@@ -1,10 +1,12 @@
 import * as dotenv from "dotenv";
+
+// Load environment variables FIRST, before importing any other modules
+// Use process.cwd() to get current working directory
+dotenv.config();
+
 import * as readline from "readline";
 import { handler } from "./src/index";
 import { APIGatewayProxyEvent } from "aws-lambda";
-
-// Load environment variables
-dotenv.config();
 
 const rl = readline.createInterface({
   input: process.stdin,

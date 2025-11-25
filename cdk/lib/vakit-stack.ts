@@ -9,6 +9,9 @@ export interface VakitStackProps extends cdk.StackProps {
   openRouterApiKey: string;
   model?: string;
   defaultUserId?: string;
+  googleClientId?: string;
+  googleClientSecret?: string;
+  googleRefreshToken?: string;
 }
 
 export class VakitStack extends cdk.Stack {
@@ -29,8 +32,12 @@ export class VakitStack extends cdk.Stack {
         OPENROUTER_BASE_URL: "https://openrouter.ai/api/v1",
         MODEL: props.model || "openai/gpt-4-turbo",
         DEFAULT_USER_ID: props.defaultUserId || "yuya",
+        // Google Calendar API credentials
+        ...(props.googleClientId && { GOOGLE_CLIENT_ID: props.googleClientId }),
+        ...(props.googleClientSecret && { GOOGLE_CLIENT_SECRET: props.googleClientSecret }),
+        ...(props.googleRefreshToken && { GOOGLE_REFRESH_TOKEN: props.googleRefreshToken }),
       },
-      timeout: cdk.Duration.seconds(30),
+      timeout: cdk.Duration.seconds(45), // Increased for external API calls
       memorySize: 512,
       logRetention: logs.RetentionDays.ONE_WEEK,
       description: "VAKIT Agent Brain - Intent classification and handling",

@@ -8,6 +8,7 @@ import { SetTimerCommand } from "./commands/timer";
 import { SetAlarmCommand } from "./commands/alarm";
 import { QueryScheduleCommand } from "./commands/querySchedule";
 import { AddEventCommand } from "./commands/addEvent";
+import { UpdateEventCommand } from "./commands/updateEvent";
 import { CancelEventCommand } from "./commands/cancelEvent";
 import { SlackPostCommand } from "./commands/slackPost";
 import { SlackDmCommand } from "./commands/slackDm";
@@ -28,6 +29,7 @@ export class CommandRegistry {
       new SetAlarmCommand(apiKey, model),
       new QueryScheduleCommand(apiKey, model),
       new AddEventCommand(apiKey, model),
+      new UpdateEventCommand(apiKey, model),
       new CancelEventCommand(apiKey, model),
       new SlackPostCommand(apiKey, model),
       new SlackDmCommand(apiKey, model),

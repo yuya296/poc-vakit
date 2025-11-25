@@ -1,15 +1,16 @@
 import * as dotenv from "dotenv";
+
+// Load environment variables FIRST, before any other imports
+dotenv.config();
+
 import { handler } from "./src/index";
 import { APIGatewayProxyEvent } from "aws-lambda";
-
-// Load environment variables from .env file
-dotenv.config();
 
 async function test() {
   // Mock API Gateway event
   const event: APIGatewayProxyEvent = {
     body: JSON.stringify({
-      text: "こんにちは",
+      text: "明日の午後の予定は？",
       user_id: "yuya",
     }),
     headers: {},

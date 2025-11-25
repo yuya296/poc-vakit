@@ -19,10 +19,18 @@ if (!openRouterApiKey) {
 const model = app.node.tryGetContext("model") || process.env.MODEL;
 const userId = app.node.tryGetContext("userId") || process.env.DEFAULT_USER_ID;
 
+// Google Calendar credentials (optional)
+const googleClientId = process.env.GOOGLE_CLIENT_ID;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+const googleRefreshToken = process.env.GOOGLE_REFRESH_TOKEN;
+
 new VakitStack(app, "VakitStack", {
   openRouterApiKey,
   model,
   defaultUserId: userId,
+  googleClientId,
+  googleClientSecret,
+  googleRefreshToken,
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION || "ap-northeast-1",

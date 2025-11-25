@@ -9,6 +9,7 @@ export const IntentName = z.enum([
   "SET_ALARM",
   "QUERY_SCHEDULE",
   "ADD_EVENT",
+  "UPDATE_EVENT",
   "CANCEL_EVENT",
   "SLACK_POST_MESSAGE",
   "SLACK_SEND_DM",
@@ -62,28 +63,41 @@ export const AddEventSlots = z.object({
 });
 export type AddEventSlots = z.infer<typeof AddEventSlots>;
 
-// 7. CANCEL_EVENT
+// 7. UPDATE_EVENT
+export const UpdateEventSlots = z.object({
+  event_id: z.string().optional(), // イベントID（分かる場合）
+  target_time: z.string().datetime().optional(), // 対象イベントの時刻（IDが不明な場合）
+  title_keyword: z.string().optional(), // タイトルキーワード（IDが不明な場合）
+  new_title: z.string().optional(),
+  new_start: z.string().datetime().optional(),
+  new_end: z.string().datetime().optional(),
+  new_description: z.string().optional(),
+  new_location: z.string().optional(),
+});
+export type UpdateEventSlots = z.infer<typeof UpdateEventSlots>;
+
+// 8. CANCEL_EVENT
 export const CancelEventSlots = z.object({
   target_time: z.string().datetime(),
   title_keyword: z.string().optional(),
 });
 export type CancelEventSlots = z.infer<typeof CancelEventSlots>;
 
-// 8. SLACK_POST_MESSAGE
+// 9. SLACK_POST_MESSAGE
 export const SlackPostMessageSlots = z.object({
   channel: z.string(), // e.g., "#random"
   message: z.string(),
 });
 export type SlackPostMessageSlots = z.infer<typeof SlackPostMessageSlots>;
 
-// 9. SLACK_SEND_DM
+// 10. SLACK_SEND_DM
 export const SlackSendDMSlots = z.object({
   user_display_name: z.string(),
   message: z.string(),
 });
 export type SlackSendDMSlots = z.infer<typeof SlackSendDMSlots>;
 
-// 10. SLACK_SUMMARIZE_CHANNEL
+// 11. SLACK_SUMMARIZE_CHANNEL
 export const SlackSummarizeChannelSlots = z.object({
   channel: z.string(),
   range_hours: z.number().int().positive().default(12),
@@ -101,6 +115,7 @@ export type IntentPayload =
   | { intent: "SET_ALARM"; slots: SetAlarmSlots }
   | { intent: "QUERY_SCHEDULE"; slots: QueryScheduleSlots }
   | { intent: "ADD_EVENT"; slots: AddEventSlots }
+  | { intent: "UPDATE_EVENT"; slots: UpdateEventSlots }
   | { intent: "CANCEL_EVENT"; slots: CancelEventSlots }
   | { intent: "SLACK_POST_MESSAGE"; slots: SlackPostMessageSlots }
   | { intent: "SLACK_SEND_DM"; slots: SlackSendDMSlots }

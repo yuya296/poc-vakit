@@ -20,6 +20,15 @@ if [ -z "$OPENROUTER_API_KEY" ]; then
   exit 1
 fi
 
+# Google Calendar credentials are optional
+if [ -n "$GOOGLE_CLIENT_ID" ] && [ -n "$GOOGLE_CLIENT_SECRET" ] && [ -n "$GOOGLE_REFRESH_TOKEN" ]; then
+  echo "✅ Google Calendar credentials found"
+else
+  echo "⚠️  Warning: Google Calendar credentials not set"
+  echo "   Calendar features will not work until credentials are configured"
+  echo "   Run: npx ts-node lambda/scripts/google-oauth-setup.ts"
+fi
+
 if [ -z "$AWS_PROFILE" ]; then
   echo "⚠️  Warning: AWS_PROFILE is not set, using default profile"
 fi
