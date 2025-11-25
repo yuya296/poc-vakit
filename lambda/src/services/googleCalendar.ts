@@ -67,11 +67,13 @@ export interface CalendarEvent {
  *
  * @param timeMin 検索開始日時（ISO 8601形式）
  * @param timeMax 検索終了日時（ISO 8601形式）
+ * @param onlyOwned trueの場合、所有カレンダーのみから取得（デフォルト: true）
  * @returns イベントのリスト
  */
 export async function listEvents(
   timeMin: string,
-  timeMax: string
+  timeMax: string,
+  onlyOwned: boolean = true
 ): Promise<CalendarEvent[]> {
   const calendar = getCalendarApi();
 
@@ -80,12 +82,19 @@ export async function listEvents(
     const calendarListResponse = await calendar.calendarList.list();
     const calendars = calendarListResponse.data.items || [];
 
-    console.log(`[GoogleCalendar] Found ${calendars.length} calendars`);
+    // 所有カレンダーのみにフィルタリング（オプション）
+    const filteredCalendars = onlyOwned
+      ? calendars.filter((cal) => cal.accessRole === "owner")
+      : calendars;
+
+    console.log(
+      `[GoogleCalendar] Found ${calendars.length} calendars (${filteredCalendars.length} ${onlyOwned ? "owned" : "total"})`
+    );
 
     // 各カレンダーから予定を取得
     const allEvents: CalendarEvent[] = [];
 
-    for (const cal of calendars) {
+    for (const cal of filteredCalendars) {
       if (!cal.id) continue;
 
       try {
@@ -281,14 +290,16 @@ export async function deleteEvent(eventId: string): Promise<void> {
  * @param keyword 検索キーワード（タイトルに含まれる）
  * @param timeMin 検索開始日時
  * @param timeMax 検索終了日時
+ * @param onlyOwned 所有カレンダーのみから検索（デフォルト: true）
  * @returns マッチしたイベントのリスト
  */
 export async function searchEvents(
   keyword: string,
   timeMin: string,
-  timeMax: string
+  timeMax: string,
+  onlyOwned: boolean = true
 ): Promise<CalendarEvent[]> {
-  const events = await listEvents(timeMin, timeMax);
+  const events = await listEvents(timeMin, timeMax, onlyOwned);
 
   return events.filter((event) =>
     event.summary.toLowerCase().includes(keyword.toLowerCase())

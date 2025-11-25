@@ -10,7 +10,7 @@ async function test() {
   // Mock API Gateway event
   const event: APIGatewayProxyEvent = {
     body: JSON.stringify({
-      text: "明日の午後の予定は？",
+      text: "直近1週間の予定を教えて",
       user_id: "yuya",
     }),
     headers: {},

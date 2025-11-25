@@ -230,12 +230,18 @@ export class IntentClassifier {
     // 2. スペースを除去
     sanitized = sanitized.trim();
 
-    // 3. タイムゾーンが欠けている場合は追加
+    // 3. 不完全なタイムゾーンを修正
+    // +09: → +09:00
+    sanitized = sanitized.replace(/\+(\d{2}):?\s*$/, '+$1:00');
+    // +9:00 → +09:00
+    sanitized = sanitized.replace(/\+(\d):\d{2}$/, '+0$1:00');
+
+    // 4. タイムゾーンが欠けている場合は追加
     if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(sanitized)) {
       sanitized += '+09:00';
     }
 
-    // 4. 不正な文字を除去（例: ???）
+    // 5. 不正な文字を除去（例: ???）
     sanitized = sanitized.replace(/\?+/g, '');
 
     return sanitized;
