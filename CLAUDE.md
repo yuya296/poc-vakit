@@ -48,14 +48,21 @@
 #### 4. ローカルテスト環境 ✅
 **ファイル**:
 - `lambda/test.ts`: 単発テストスクリプト
-- `lambda/chat.ts`: 対話型CLIチャットアプリ
+- `lambda/chat.ts`: 対話型CLIチャットアプリ（デバッグモード対応）
 
 **実行方法**:
 ```bash
 cd lambda
-npm run test:local  # 単発テスト
-npm run chat        # 対話モード
+npm run test:local     # 単発テスト
+npm run chat           # 対話モード（簡潔表示）
+npm run chat:debug     # 対話モード（デバッグ情報表示）
 ```
+
+**チャット機能** (v0.2.1):
+- **通常モード**: AIの応答のみ表示
+- **デバッグモード**: Intent、Slots、Tool Callsなどをグレー色で表示
+- console.logをインターセプトして不要なログを抑制
+- 詳細は `lambda/README_CHAT.md` 参照
 
 **テスト結果**:
 - "こんにちは" → 簡潔な応答確認 ✅

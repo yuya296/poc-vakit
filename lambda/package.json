@@ -10,6 +10,7 @@
     "test": "jest",
     "test:local": "ts-node test.ts",
     "chat": "ts-node chat.ts",
+    "chat:debug": "ts-node chat.ts --debug",
     "lint": "eslint src --ext .ts"
   },
   "dependencies": {

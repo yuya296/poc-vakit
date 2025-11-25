@@ -2,6 +2,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { IntentClassifier } from "./classifier";
 import { CommandRegistry } from "./registry";
 import { AgentRequest, AgentResponse, AgentConfig } from "./types";
+import { logger } from "./logger";
 
 // ==================== Configuration ====================
 
@@ -39,7 +40,7 @@ interface LogEntry {
 }
 
 function logRequest(entry: LogEntry): void {
-  console.log(JSON.stringify(entry));
+  logger.debug(JSON.stringify(entry));
 }
 
 // ==================== Main Handler ====================

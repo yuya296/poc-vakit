@@ -1,5 +1,6 @@
 import { IntentCommand, HandlerResult } from "./commands/base";
 import { IntentPayload } from "./types";
+import { logger } from "./logger";
 
 // 全Commandをインポート
 import { SmallTalkCommand } from "./commands/smallTalk";
@@ -43,7 +44,7 @@ export class CommandRegistry {
       }
     }
 
-    console.log(`[CommandRegistry] Registered ${this.commands.size} commands:`, [
+    logger.debug(`[CommandRegistry] Registered ${this.commands.size} commands:`, [
       ...this.commands.keys(),
     ]);
   }

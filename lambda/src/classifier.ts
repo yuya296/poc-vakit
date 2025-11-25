@@ -4,6 +4,7 @@ import {
   IntentClassificationSchema,
   AgentConfig,
 } from "./types";
+import { logger } from "./logger";
 
 // ==================== Intent Definitions ====================
 
@@ -212,7 +213,7 @@ export class IntentClassifier {
     this.model = config.model;
     this.systemPrompt = generateSystemPrompt(enabledIntents);
 
-    console.log(`[IntentClassifier] Initialized with ${enabledIntents.length} enabled intents:`, enabledIntents);
+    logger.debug(`[IntentClassifier] Initialized with ${enabledIntents.length} enabled intents:`, enabledIntents);
   }
 
   /**

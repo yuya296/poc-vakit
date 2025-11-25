@@ -6,6 +6,7 @@
 
 import { google, calendar_v3 } from "googleapis";
 import type { OAuth2Client } from "google-auth-library";
+import { logger } from "../logger";
 
 // 環境変数から認証情報を読み込み
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
@@ -87,7 +88,7 @@ export async function listEvents(
       ? calendars.filter((cal) => cal.accessRole === "owner")
       : calendars;
 
-    console.log(
+    logger.debug(
       `[GoogleCalendar] Found ${calendars.length} calendars (${filteredCalendars.length} ${onlyOwned ? "owned" : "total"})`
     );
 
@@ -121,18 +122,18 @@ export async function listEvents(
         allEvents.push(...events);
       } catch (error: any) {
         // 個別のカレンダーでエラーが出ても続行
-        console.error(`[GoogleCalendar] Error fetching calendar ${cal.summary}:`, error.message);
+        logger.debug(`[GoogleCalendar] Error fetching calendar ${cal.summary}: ${error.message}`);
       }
     }
 
     // 開始時刻でソート
     allEvents.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
 
-    console.log(`[GoogleCalendar] Found ${allEvents.length} total events`);
+    logger.debug(`[GoogleCalendar] Found ${allEvents.length} total events`);
 
     return allEvents;
   } catch (error: any) {
-    console.error("[GoogleCalendar] listEvents error:", error);
+    logger.error("[GoogleCalendar] listEvents error:", error);
 
     if (error.code === 401) {
       throw new Error(
@@ -188,7 +189,7 @@ export async function createEvent(
       location: created.location || undefined,
     };
   } catch (error: any) {
-    console.error("[GoogleCalendar] createEvent error:", error);
+    logger.error("[GoogleCalendar] createEvent error:", error);
     throw new Error(`Google Calendar API error: ${error.message}`);
   }
 }
@@ -250,7 +251,7 @@ export async function updateEvent(
       location: updated.location || undefined,
     };
   } catch (error: any) {
-    console.error("[GoogleCalendar] updateEvent error:", error);
+    logger.error("[GoogleCalendar] updateEvent error:", error);
 
     if (error.code === 404) {
       throw new Error(`イベントID ${eventId} が見つかりません。`);
@@ -274,7 +275,7 @@ export async function deleteEvent(eventId: string): Promise<void> {
       eventId,
     });
   } catch (error: any) {
-    console.error("[GoogleCalendar] deleteEvent error:", error);
+    logger.error("[GoogleCalendar] deleteEvent error:", error);
 
     if (error.code === 404) {
       throw new Error(`イベントID ${eventId} が見つかりません。`);
