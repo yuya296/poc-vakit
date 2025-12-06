@@ -1,0 +1,111 @@
+import 'dotenv/config';
+import * as readline from 'readline';
+import { CalendarAgent } from './agent.js';
+import type { AgentConfig } from './types.js';
+
+/**
+ * 環境変数から設定を読み込み
+ */
+function loadConfig(): AgentConfig {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  const n8nWebhookBaseUrl = process.env.N8N_WEBHOOK_BASE_URL;
+  const n8nBearerToken = process.env.N8N_BEARER_TOKEN;
+  const model = process.env.MODEL || 'openai/gpt-4o-mini';
+
+  if (!apiKey) {
+    throw new Error('OPENROUTER_API_KEY is not set');
+  }
+
+  if (!n8nWebhookBaseUrl) {
+    throw new Error('N8N_WEBHOOK_BASE_URL is not set');
+  }
+
+  if (!n8nBearerToken) {
+    throw new Error('N8N_BEARER_TOKEN is not set');
+  }
+
+  return {
+    apiKey,
+    model,
+    n8nWebhookBaseUrl,
+    n8nBearerToken,
+  };
+}
+
+/**
+ * 対話型チャットインターフェース
+ */
+async function startChat() {
+  const config = loadConfig();
+  const agent = new CalendarAgent(config);
+
+  console.log('📅 Calendar Agent - Interactive Chat Mode');
+  console.log(`Model: ${config.model}`);
+  console.log(`n8n: ${config.n8nWebhookBaseUrl}`);
+  console.log('\nコマンド:');
+  console.log('  /clear  - 会話履歴をクリア');
+  console.log('  /history - 会話履歴を表示');
+  console.log('  /exit   - 終了');
+  console.log('\n例:');
+  console.log('  > 明日の午後2時から3時までミーティングを追加して');
+  console.log('  > 今週の予定を教えて');
+  console.log('');
+
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    prompt: '\nYou> ',
+  });
+
+  rl.prompt();
+
+  rl.on('line', async (line) => {
+    const input = line.trim();
+
+    if (!input) {
+      rl.prompt();
+      return;
+    }
+
+    // コマンド処理
+    if (input === '/exit') {
+      console.log('👋 Goodbye!');
+      rl.close();
+      process.exit(0);
+    }
+
+    if (input === '/clear') {
+      agent.clearHistory();
+      console.log('✨ 会話履歴をクリアしました');
+      rl.prompt();
+      return;
+    }
+
+    if (input === '/history') {
+      const history = agent.getHistory();
+      console.log('\n📜 会話履歴:');
+      history.forEach((msg, i) => {
+        console.log(`${i + 1}. [${msg.role}] ${msg.content}`);
+      });
+      rl.prompt();
+      return;
+    }
+
+    // エージェントに送信
+    try {
+      const response = await agent.chat(input);
+      console.log(`\nAssistant> ${response}`);
+    } catch (error) {
+      console.error('\n❌ Error:', error instanceof Error ? error.message : error);
+    }
+
+    rl.prompt();
+  });
+
+  rl.on('close', () => {
+    console.log('\n👋 Goodbye!');
+    process.exit(0);
+  });
+}
+
+startChat().catch(console.error);

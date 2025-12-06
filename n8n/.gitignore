@@ -1,0 +1,9 @@
+# Environment variables
+.env
+
+# n8n data directory
+n8n_data/
+n8n_files/
+
+# Docker volumes
+*.log
